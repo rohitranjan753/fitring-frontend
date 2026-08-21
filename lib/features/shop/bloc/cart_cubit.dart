@@ -56,8 +56,12 @@ class CartCubit extends Cubit<CartState> {
   }
 
   Future<void> addToCart(String productId, int quantity) async {
-    await _repository.addToCart(productId, quantity);
-    await load();
+    try {
+      await _repository.addToCart(productId, quantity);
+      await load();
+    } catch (_) {
+      emit(state.copyWith(isLoading: false, errorMessage: 'Could not update your cart.'));
+    }
   }
 
   Future<void> placeOrder() async {

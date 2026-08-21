@@ -5,6 +5,8 @@ import 'package:fitring_companion/features/auth/services/auth_api.dart';
 import 'package:fitring_companion/features/auth/repositories/auth_repository_impl.dart';
 import 'package:fitring_companion/features/auth/repositories/auth_repository.dart';
 import 'package:fitring_companion/features/auth/bloc/auth_bloc.dart';
+import 'package:fitring_companion/features/devices/services/device_id_cache.dart';
+import 'package:fitring_companion/features/devices/services/devices_api.dart';
 import 'package:fitring_companion/features/health/services/app_database.dart';
 import 'package:fitring_companion/features/health/repositories/health_repository_impl.dart';
 import 'package:fitring_companion/features/health/repositories/health_repository.dart';
@@ -37,6 +39,10 @@ void configureDependencies() {
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(sl(), sl()));
   sl.registerLazySingleton(() => AuthBloc(sl()));
 
+  // --- Devices ---
+  sl.registerLazySingleton(() => DevicesApi(sl<ApiClient>().dio));
+  sl.registerLazySingleton(() => DeviceIdCache(sl()));
+
   // --- Wearable ---
   // Swapping the mock for a real vendor SDK later means changing exactly
   // this one line — nothing above WearableService is affected.
@@ -49,7 +55,7 @@ void configureDependencies() {
   // --- Health data: local storage + offline sync ---
   sl.registerLazySingleton(() => AppDatabase());
   sl.registerLazySingleton<HealthRepository>(
-    () => HealthRepositoryImpl(sl(), sl(), sl<WearableRepository>()),
+    () => HealthRepositoryImpl(sl(), sl(), sl(), sl(), sl<WearableRepository>()),
   );
   sl.registerLazySingleton(() => HistoryCubit(sl()));
 

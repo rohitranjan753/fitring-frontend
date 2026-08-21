@@ -35,52 +35,78 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
           return RefreshIndicator(
             onRefresh: () => context.read<HistoryCubit>().load(),
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                _SyncStatusBanner(pendingCount: state.pendingSyncCount),
-                const SizedBox(height: 20),
-                if (state.dailySummary.isNotEmpty) ...[
-                  Text('Weekly summary', style: Theme.of(context).textTheme.titleMedium),
-                  const SizedBox(height: 12),
-                  HealthLineChart(
-                    title: 'Heart Rate (avg/day)',
-                    values: state.dailySummary.map((d) => d.avgHeartRate).toList(),
-                    color: AppTheme.accent,
+            // A plain ListView with all children built up front doesn't
+            // scale as "Load more" grows the readings list — CustomScrollView
+            // + SliverList only builds the rows actually on screen, so the
+            // raw-history section stays cheap no matter how many readings
+            // have accumulated locally.
+            child: CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _SyncStatusBanner(pendingCount: state.pendingSyncCount),
+                        const SizedBox(height: 20),
+                        if (state.dailySummary.isNotEmpty) ...[
+                          Text('Weekly summary', style: Theme.of(context).textTheme.titleMedium),
+                          const SizedBox(height: 12),
+                          HealthLineChart(
+                            title: 'Heart Rate (avg/day)',
+                            values: state.dailySummary.map((d) => d.avgHeartRate).toList(),
+                            color: AppTheme.accent,
+                          ),
+                          const SizedBox(height: 20),
+                          HealthLineChart(
+                            title: 'SpO₂ (avg/day)',
+                            values: state.dailySummary.map((d) => d.avgSpo2).toList(),
+                            color: AppTheme.warn,
+                          ),
+                          const SizedBox(height: 20),
+                          Text('Steps per day', style: Theme.of(context).textTheme.titleMedium),
+                          const SizedBox(height: 8),
+                          ...state.dailySummary.map((d) => _StepsRow(summary: d)),
+                          const SizedBox(height: 24),
+                        ],
+                        Text('Daily history', style: Theme.of(context).textTheme.titleMedium),
+                        const SizedBox(height: 8),
+                        if (state.readings.isEmpty)
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            child: Text('No readings yet — keep the app open for a bit.'),
+                          ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 20),
-                  HealthLineChart(
-                    title: 'SpO₂ (avg/day)',
-                    values: state.dailySummary.map((d) => d.avgSpo2).toList(),
-                    color: AppTheme.warn,
-                  ),
-                  const SizedBox(height: 20),
-                  Text('Steps per day', style: Theme.of(context).textTheme.titleMedium),
-                  const SizedBox(height: 8),
-                  ...state.dailySummary.map((d) => _StepsRow(summary: d)),
-                  const SizedBox(height: 24),
-                ],
-                Text('Daily history', style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 8),
-                if (state.readings.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Text('No readings yet — keep the app open for a bit.'),
-                  ),
-                ...state.readings.map(
-                  (r) => ListTile(
-                    dense: true,
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.favorite, size: 18),
-                    title: Text('${r.heartRate} BPM · SpO₂ ${r.spo2}% · ${r.steps} steps'),
-                    subtitle: Text(DateFormat('MMM d, h:mm a').format(r.recordedAt.toLocal())),
+                ),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  sliver: SliverList.builder(
+                    itemCount: state.readings.length,
+                    itemBuilder: (context, index) {
+                      final r = state.readings[index];
+                      return ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.favorite, size: 18),
+                        title: Text('${r.heartRate} BPM · SpO₂ ${r.spo2}% · ${r.steps} steps'),
+                        subtitle: Text(DateFormat('MMM d, h:mm a').format(r.recordedAt.toLocal())),
+                      );
+                    },
                   ),
                 ),
                 if (state.readings.isNotEmpty)
-                  Center(
-                    child: TextButton(
-                      onPressed: () => context.read<HistoryCubit>().loadMore(),
-                      child: const Text('Load more'),
+                  SliverPadding(
+                    padding: const EdgeInsets.all(16),
+                    sliver: SliverToBoxAdapter(
+                      child: Center(
+                        child: TextButton(
+                          onPressed: () => context.read<HistoryCubit>().loadMore(),
+                          child: const Text('Load more'),
+                        ),
+                      ),
                     ),
                   ),
               ],

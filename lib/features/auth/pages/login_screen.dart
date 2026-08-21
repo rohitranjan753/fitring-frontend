@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fitring_companion/core/theme/app_theme.dart';
 import 'package:fitring_companion/features/auth/bloc/auth_bloc.dart';
 import 'package:fitring_companion/features/auth/bloc/auth_event.dart';
 import 'package:fitring_companion/features/auth/bloc/auth_state.dart';
@@ -46,37 +47,84 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Icon(Icons.favorite, size: 56),
-                    const SizedBox(height: 12),
+                    Container(
+                      width: 84,
+                      height: 84,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [AppTheme.accent, AppTheme.accentDeep],
+                        ),
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: AppTheme.softShadow(opacity: 0.22),
+                      ),
+                      child: const Icon(Icons.favorite_rounded, size: 40, color: Colors.white),
+                    ),
+                    const SizedBox(height: 20),
                     Text(
                       'FitRing',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Your wearable, one tap away',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: AppTheme.inkSoft, fontWeight: FontWeight.w500),
+                    ),
+                    const SizedBox(height: 36),
                     TextField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(
+                        labelText: 'Email',
+                        prefixIcon: Icon(Icons.alternate_email_rounded),
+                      ),
                     ),
                     const SizedBox(height: 16),
                     TextField(
                       controller: _passwordController,
                       obscureText: true,
-                      decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(
+                        labelText: 'Password',
+                        prefixIcon: Icon(Icons.lock_outline_rounded),
+                      ),
                     ),
                     if (errorMessage != null) ...[
-                      const SizedBox(height: 12),
-                      Text(errorMessage, style: const TextStyle(color: Colors.red)),
+                      const SizedBox(height: 14),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: AppTheme.bad.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.error_outline_rounded, size: 18, color: AppTheme.bad),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                errorMessage,
+                                style: const TextStyle(color: AppTheme.bad, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 28),
                     FilledButton(
                       onPressed: isLoading ? null : () => _submit(context),
                       child: isLoading
                           ? const SizedBox(
                               height: 20,
                               width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
                             )
                           : const Text('Log in'),
                     ),

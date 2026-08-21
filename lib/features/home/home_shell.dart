@@ -81,16 +81,26 @@ class _OfflineBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ConnectivityCubit, bool>(
       builder: (context, isOnline) {
-        if (isOnline) return const SizedBox.shrink();
-        return Container(
-          width: double.infinity,
-          color: AppTheme.warn,
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: const Text(
-            'No internet connection — showing cached data',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
-          ),
+        return AnimatedSize(
+          duration: const Duration(milliseconds: 220),
+          child: isOnline
+              ? const SizedBox(width: double.infinity)
+              : Container(
+                  width: double.infinity,
+                  color: AppTheme.warn,
+                  padding: const EdgeInsets.symmetric(vertical: 9),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.cloud_off_rounded, size: 14, color: Colors.white),
+                      SizedBox(width: 8),
+                      Text(
+                        'No internet connection — showing cached data',
+                        style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
+                ),
         );
       },
     );

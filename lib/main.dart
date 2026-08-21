@@ -59,6 +59,7 @@ class FitRingApp extends StatelessWidget {
             .read<WearableBloc>()
             .add(const WearableDisconnectRequested()),
         child: MaterialApp(
+          debugShowCheckedModeBanner: false,
           title: 'FitRing Companion',
           theme: AppTheme.light(),
           home: const AuthGate(),

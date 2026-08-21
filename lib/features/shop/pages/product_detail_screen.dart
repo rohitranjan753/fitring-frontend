@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fitring_companion/core/widgets/error_banner.dart';
 import 'package:fitring_companion/features/shop/models/product.dart';
 import 'package:fitring_companion/features/shop/bloc/cart_cubit.dart';
 
@@ -53,8 +54,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               width: double.infinity,
               child: FilledButton(
                 onPressed: () async {
-                  await context.read<CartCubit>().addToCart(product.id, _quantity);
-                  if (context.mounted) {
+                  final cart = context.read<CartCubit>();
+                  await cart.addToCart(product.id, _quantity);
+                  if (!context.mounted) return;
+                  if (cart.state.errorMessage != null) {
+                    showErrorBanner(context, cart.state.errorMessage!);
+                  } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Added to cart')),
                     );
