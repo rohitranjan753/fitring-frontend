@@ -30,12 +30,6 @@ class FitRingApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // All app-wide state lives in ONE provider list, above the app's single
-    // Navigator. That matters: a provider placed *inside* a pushed screen
-    // (e.g. inside HomeShell) would NOT be visible to screens reached via
-    // Navigator.push, since pushed routes sit alongside HomeShell in the
-    // navigator's stack, not nested inside it. Putting everything here,
-    // above MaterialApp's home, sidesteps that entirely.
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => sl<AuthBloc>()..add(const AuthStarted())),
@@ -47,12 +41,6 @@ class FitRingApp extends StatelessWidget {
         BlocProvider(create: (_) => sl<OrdersCubit>()),
       ],
       child: BlocListener<AuthBloc, AuthState>(
-        // Covers both the logout button AND the automatic 401-triggered
-        // logout in main() above — either way, a session that just ended
-        // shouldn't leave the wearable connected and emitting in the
-        // background. listenWhen restricts this to a real "was logged in,
-        // now isn't" transition, not the initial pre-login state or a
-        // failed login attempt (both of which are also AuthUnauthenticated).
         listenWhen: (previous, current) =>
             previous is AuthAuthenticated && current is AuthUnauthenticated,
         listener: (context, state) => context
